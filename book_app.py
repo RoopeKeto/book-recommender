@@ -15,7 +15,7 @@ x = pickle.load(open("pickled_X.p", "rb"))
 # let's transpose x to 
 x = x.transpose()
 # loading the corresponding movies
-books = pd.read_csv('/home/roope/projects/book-recommender-algorithms/data/goodbooks-10k/books.csv')
+books = pd.read_csv('/home/roope/projects/book-recommender-app/data/goodbooks-10k/books.csv')
 
 # utility functions
 def find_similar(book_vectors, chosen_book_index, num_of_similar):
