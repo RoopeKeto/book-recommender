@@ -35,6 +35,11 @@
     
     <main role="main" class="container">
       {% block content %}
+        {% if no_results %}
+          <div class="alert alert-info" role="alert">
+            <strong>No results</strong> The book you searched for probably does not exist in the database as it has 10 000, mainly english books.
+          </div>
+        {% endif %}
         {% if books %}
         <div class="row">
           {% for book in books %}
@@ -45,7 +50,8 @@
                   <div class="article-metadata "> 
                     <a href="{{'https://www.goodreads.com/book/show/' ~ book.good_reads_id|string }}" target="_blank">{{book.title }}</a>
                   </div>
-                  <p class="article-content">{{book.author}}</p>
+                  <p class="article-content"><strong>By: {{book.author}}</strong></p>
+                  <p class="article-content">Average rating: {{book.average_rating}} stars</p>
                 </div>
               </article>
             </div>
@@ -56,14 +62,24 @@
         </div>
         {% elif book_list%}
           <article class="media content-section">
-                <p class="article-content"><strong>Found multiple results. Is the book you're looking for some of these below? If so, copy and paste the full name of the book to the search field</Strong></p>
+                <p class="article-content"><strong>Found multiple results. Press search similar, if some book below matches what you wanted to search.
+                  If none of these matches, the database may not have the book you wanted (has 10 000 books, mainly popular english ones).
+                </Strong></p>
           </article>
           {% for item in book_list %}
             <article class="media content-section">
               <div class="media-body">
                 <p class="article-content">{{ item[1]}}</p>
               </div>
+              <div class="media-body">
+                <form method="post" action="/">
+                    <input type="hidden" name="index" value="{{item[0]}}">
+                    <input type="submit" name="Search" value="Search similar">
+                </form>
+                
+              </div>
             </article>
+            
           {% endfor %}
         {% endif %}
       {% endblock %} 

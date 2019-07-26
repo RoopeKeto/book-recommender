@@ -1,5 +1,5 @@
 import sys
-from flask import Flask, render_template, url_for, redirect
+from flask import Flask, render_template, url_for, redirect, request
 import os
 import numpy as np
 import pickle 
@@ -15,7 +15,7 @@ x = pickle.load(open("pickled_X.p", "rb"))
 # let's transpose x to 
 x = x.transpose()
 # loading the corresponding movies
-books = pd.read_csv('/home/roope/projects/book-recommender-app/data/goodbooks-10k/books.csv')
+books = pd.read_csv('data/goodbooks-10k/books.csv')
 
 # utility functions
 def find_similar(book_vectors, chosen_book_index, num_of_similar):
@@ -39,6 +39,7 @@ def find_similar(book_vectors, chosen_book_index, num_of_similar):
         book_dict['image'] = books['image_url'].iloc[most_similar[i]]
         book_dict['author'] = books['authors'].iloc[most_similar[i]]
         book_dict['good_reads_id'] = books['goodreads_book_id'].iloc[most_similar[i]]
+        book_dict['average_rating'] = books['average_rating'].iloc[most_similar[i]]
         similar_books.append(book_dict)
     return similar_books
 
@@ -49,9 +50,6 @@ def find_books(search_word):
         word_to_search = books['title'].iloc[i]
         if(search_word.lower() in word_to_search.lower()):
             results.append([i, word_to_search])
-
-    for i in range(len(results)):
-        print(results[i][0],",",results[i][1])
     return results
 
 
@@ -61,13 +59,24 @@ def index():
     if form.validate_on_submit():
         search_word = form.searchword.data
         books_to_search = find_books(search_word)
-        print(books_to_search)
+
+        # handling of no search results
+        if not books_to_search:
+            return render_template('sort_by_sentiment_app.html', no_results="no results", form=form)
+
+        # handling of one match
         if len(books_to_search) == 1:
             books = find_similar(x, books_to_search[0][0], 100)
             return render_template('sort_by_sentiment_app.html',books=books, form=form)
+        # handling of multiple results
         else:
             return render_template('sort_by_sentiment_app.html', book_list=books_to_search, form=form)
 
+    if request.method == 'POST':
+        if request.form.get('Search') == 'Search similar':
+            book_index = request.form.get('index')
+            books = find_similar(x, int(book_index), 100)
+            return render_template('sort_by_sentiment_app.html',books=books, form=form)
 
     return render_template('sort_by_sentiment_app.html', form=form)
 
