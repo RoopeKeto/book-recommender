@@ -37,7 +37,7 @@
       {% block content %}
         {% if no_results %}
           <div class="alert alert-info" role="alert">
-            <strong>No results</strong> The book you searched for probably does not exist in the database as it has 10 000, mainly english books.
+            <strong>No results</strong> The book you searched for probably does not exist in the database as it has 10 000, mainly English books.
           </div>
         {% endif %}
         {% if books %}
@@ -48,10 +48,10 @@
                 <img class="rounded" src="{{ book.image}}">
                 <div class="media-body">
                   <div class="article-metadata "> 
-                    <a href="{{'https://www.goodreads.com/book/show/' ~ book.good_reads_id|string }}" target="_blank">{{book.title }}</a>
+                    <a class="title" href="{{'https://www.goodreads.com/book/show/' ~ book.good_reads_id|string }}" target="_blank"><strong>{{book.title }}</strong></a>
                   </div>
-                  <p class="article-content"><strong>By: {{book.author}}</strong></p>
-                  <p class="article-content">Average rating: {{book.average_rating}} stars</p>
+                  <div class="article-content greyish-brownish">By: {{ book.author }}</div>
+                  <div class="align-bottom article-content greyish-brownish">Average rating: {{book.average_rating}} stars</div>
                 </div>
               </article>
             </div>
@@ -61,20 +61,20 @@
           {% endfor %}
         </div>
         {% elif book_list%}
-          <article class="media content-section">
-                <p class="article-content"><strong>Found multiple results. Press search similar, if some book below matches what you wanted to search.
-                  If none of these matches, the database may not have the book you wanted (has 10 000 books, mainly popular english ones).
-                </Strong></p>
-          </article>
+          <div class="alert alert-info" role="alert">
+            <strong>Found multiple results.</strong> Press search similar, if some book below matches what you wanted to search.
+            If none of these matches, the database may not have the book you wanted (has 10 000 books, mainly popular English ones).
+          </div>         
+
           {% for item in book_list %}
             <article class="media content-section">
               <div class="media-body">
-                <p class="article-content">{{ item[1]}}</p>
+                <div class="article-content add-margin"></div>{{ item[1]}}</div>
               </div>
-              <div class="media-body">
+              <div class="media-right">
                 <form method="post" action="/">
                     <input type="hidden" name="index" value="{{item[0]}}">
-                    <input type="submit" name="Search" value="Search similar">
+                    <input class="btn btn_add_searches btn-outline-info" type="submit" name="Search" value="Search similar">
                 </form>
                 
               </div>

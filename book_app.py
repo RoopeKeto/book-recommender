@@ -1,5 +1,6 @@
 import sys
-from flask import Flask, render_template, url_for, redirect, request
+from flask import Flask, render_template, url_for, redirect, request, flash
+from flask_sqlalchemy import SQLAlchemy
 import os
 import numpy as np
 import pickle 
@@ -8,14 +9,37 @@ from forms import SearchForm
 
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = '0b248914a4417846b62d195c17626830'
+app.config['SECRET_KEY'] = '0b248914a4417wer2322d195c17626830'
+app.config['SQLALCHEMY_DATABASE_URI'] ='sqlite:///site.db'
+
+db =SQLAlchemy(app)
+
+class Book(db.Model):
+    book_id = db.Column(db.Integer, primary_key=True)
+    goodreads_id = db.Column(db.Integer, unique=True, nullable=False)
+    title = db.Column(db.String(250), nullable=False)
+    author = db.Column(db.String(250), nullable=False)
+    book_image = db.Column(db.String(100), nullable=False)
+    average_rating = db.Column(db.Float, default=0.0)
+
+    def __repr__(self):
+        return f"Book('{self.book_id}','{self.goodreads_id}','{self.title}', '{self.author}', '{self.book_image}', '{self.average_rating}')"
+
 
 # Using the trained latent vector for predictions
 x = pickle.load(open("pickled_X.p", "rb"))
 # let's transpose x to 
 x = x.transpose()
-# loading the corresponding movies
-books = pd.read_csv('data/goodbooks-10k/books.csv')
+
+# for fast performance, creating panda dataframe in memory from database
+data_frame = pd.DataFrame(columns=['book_id', 'title', 'image_url', 'authors', 'goodreads_book_id', 'average_rating'])
+books_list = []
+for i in range(10000):
+    bk = db.session.query(Book).get(i+1)
+    book_as_list = [bk.book_id, bk.title, bk.book_image, bk.author, bk.goodreads_id, bk.average_rating]
+    books_list.append(book_as_list)
+books = pd.DataFrame(books_list, columns=['book_id', 'title', 'image_url', 'authors', 'goodreads_book_id', 'average_rating'])
+
 
 # utility functions
 def find_similar(book_vectors, chosen_book_index, num_of_similar):
@@ -66,12 +90,13 @@ def index():
 
         # handling of one match
         if len(books_to_search) == 1:
-            books = find_similar(x, books_to_search[0][0], 100)
+            books = find_similar(x, int(books_to_search[0][0]), 100)
             return render_template('sort_by_sentiment_app.html',books=books, form=form)
         # handling of multiple results
         else:
             return render_template('sort_by_sentiment_app.html', book_list=books_to_search, form=form)
 
+    # handling the case of multiple results and selectin from the listing what to search
     if request.method == 'POST':
         if request.form.get('Search') == 'Search similar':
             book_index = request.form.get('index')
