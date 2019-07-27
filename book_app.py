@@ -106,6 +106,6 @@ def index():
     return render_template('sort_by_sentiment_app.html', form=form)
 
 if __name__ == '__main__':
-    app.run(debug=True, host=os.getenv('IP', '0.0.0.0'), 
+    app.run(host=os.getenv('IP', '0.0.0.0'), 
             port=int(os.getenv('PORT', 4444)))
 
